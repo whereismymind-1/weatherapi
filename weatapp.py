@@ -59,7 +59,10 @@ st.subheader("📍 위치 선택하기 (지도 클릭)")
 
 # 한국 중심으로 초기 지도 설정
 m = folium.Map(location=[36.5, 127.5], zoom_start=7) # 한국 중앙 근처
-map_data = st_folium(m, height=450, width=800, feature_group_column="컬러") # width 조정
+
+# [!!!] 여기가 수정된 부분입니다.
+# 'feature_group_column="컬러"' 인자를 제거하여 TypeError 해결
+map_data = st_folium(m, height=450, width=800) 
 
 lat, lon = None, None
 if map_data and map_data.get("last_clicked"):
@@ -158,7 +161,7 @@ if lat is not None and lon is not None:
 
         if not df_hourly.empty:
             df_hourly["시간"] = pd.to_datetime(df_hourly["시간"])
-            df_hourly = df_hourly.set_index("시간")
+            # df_hourly = df_hourly.set_index("시간") # Altair는 인덱스보다 컬럼을 사용하는 것이 더 편리
 
             # 사용자가 보고 싶은 차트를 선택하도록 드롭다운 추가
             chart_options = {
@@ -170,7 +173,7 @@ if lat is not None and lon is not None:
 
             if selected_chart:
                 y_axis_label = chart_options[selected_chart]
-                chart = alt.Chart(df_hourly.reset_index()).mark_line(point=True).encode(
+                chart = alt.Chart(df_hourly).mark_line(point=True).encode(
                     x=alt.X('시간:T', title="시간"),
                     y=alt.Y(y_axis_label, title=y_axis_label, scale=alt.Scale(zero=False)),
                     tooltip=['시간:T', alt.Tooltip(y_axis_label, format=".1f")]
